@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:DiskGalaxy.UI.ViewModels"
+        xmlns:controls="using:DiskGalaxy.UI.Controls"
         xmlns:conv="using:DiskGalaxy.UI.Converters"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -17,16 +18,10 @@
             <ColumnDefinition Width="320" />
         </Grid.ColumnDefinitions>
 
-        <!-- 3D Viewport Placeholder -->
-        <Border Grid.Column="0"
-                Background="{StaticResource BackgroundBrush}"
-                CornerRadius="0">
-            <TextBlock Text="3D Viewport — Galaxy rendering (Phase 2)"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       Foreground="{StaticResource TextSecondaryBrush}"
-                       FontSize="16" />
-        </Border>
+        <!-- 3D Viewport -->
+        <controls:OpenGlHost Grid.Column="0"
+                             SceneGraph="{Binding Galaxy.SceneGraph}"
+                             Focusable="True" />
 
         <!-- Right Panel -->
         <Border Grid.Column="1"

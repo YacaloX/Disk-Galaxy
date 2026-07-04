@@ -40,6 +40,8 @@ public sealed partial class ScanViewModel : ViewModelBase
 
     public ObservableCollection<string> Errors { get; } = [];
 
+    public Action<ScanResult>? OnScanCompleted { get; set; }
+
     public ScanViewModel(IFileSystemScanner scanner)
     {
         _scanner = scanner;
@@ -75,6 +77,8 @@ public sealed partial class ScanViewModel : ViewModelBase
             {
                 Errors.Add(error);
             }
+
+            OnScanCompleted?.Invoke(result);
         }
         catch (OperationCanceledException)
         {
