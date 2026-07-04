@@ -7,6 +7,6 @@ public sealed class FolderGalaxy
     public long TotalSize { get; set; }
     public int FileCount { get; set; }
     public int FolderCount { get; set; }
-    public List<FolderGalaxy> Children { get; init; } = [];
-    public List<FileStar> Stars { get; init; } = [];
+    public List<FolderGalaxy> Children { get; set; } = [];
+    public List<FileStar> Stars { get; set; } = [];
 }
