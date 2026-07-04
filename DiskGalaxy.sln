@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{69BFEBE2-339F-41EE-8F0D-F12E4E0A3111}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiskGalaxy.Core", "src\DiskGalaxy.Core\DiskGalaxy.Core.csproj", "{F070BCAD-E62A-40F8-AC78-579E71C255D8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiskGalaxy.Rendering", "src\DiskGalaxy.Rendering\DiskGalaxy.Rendering.csproj", "{C111E2A3-1050-4A1C-9C76-B93E39210B92}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiskGalaxy.UI", "src\DiskGalaxy.UI\DiskGalaxy.UI.csproj", "{1DE132F7-FF51-49FB-A3C4-A2DA956F8228}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F070BCAD-E62A-40F8-AC78-579E71C255D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F070BCAD-E62A-40F8-AC78-579E71C255D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F070BCAD-E62A-40F8-AC78-579E71C255D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F070BCAD-E62A-40F8-AC78-579E71C255D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C111E2A3-1050-4A1C-9C76-B93E39210B92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C111E2A3-1050-4A1C-9C76-B93E39210B92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C111E2A3-1050-4A1C-9C76-B93E39210B92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C111E2A3-1050-4A1C-9C76-B93E39210B92}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DE132F7-FF51-49FB-A3C4-A2DA956F8228}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DE132F7-FF51-49FB-A3C4-A2DA956F8228}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DE132F7-FF51-49FB-A3C4-A2DA956F8228}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DE132F7-FF51-49FB-A3C4-A2DA956F8228}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F070BCAD-E62A-40F8-AC78-579E71C255D8} = {69BFEBE2-339F-41EE-8F0D-F12E4E0A3111}
+		{C111E2A3-1050-4A1C-9C76-B93E39210B92} = {69BFEBE2-339F-41EE-8F0D-F12E4E0A3111}
+		{1DE132F7-FF51-49FB-A3C4-A2DA956F8228} = {69BFEBE2-339F-41EE-8F0D-F12E4E0A3111}
+	EndGlobalSection
+EndGlobal
