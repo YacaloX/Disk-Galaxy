@@ -1,20 +1,146 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:DiskGalaxy.UI.ViewModels"
+        xmlns:conv="using:DiskGalaxy.UI.Converters"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
         x:Class="DiskGalaxy.UI.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="DiskGalaxy.UI">
+        Title="Disk Galaxy"
+        WindowState="Maximized"
+        Icon="/Assets/avalonia-logo.ico">
 
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="320" />
+        </Grid.ColumnDefinitions>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <!-- 3D Viewport Placeholder -->
+        <Border Grid.Column="0"
+                Background="{StaticResource BackgroundBrush}"
+                CornerRadius="0">
+            <TextBlock Text="3D Viewport — Galaxy rendering (Phase 2)"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource TextSecondaryBrush}"
+                       FontSize="16" />
+        </Border>
 
+        <!-- Right Panel -->
+        <Border Grid.Column="1"
+                Background="{StaticResource PanelBackgroundBrush}"
+                BorderBrush="{StaticResource PanelBorderBrush}"
+                BorderThickness="1,0,0,0"
+                Padding="16">
+            <ScrollViewer>
+                <StackPanel Spacing="12">
+                    <!-- Header -->
+                    <TextBlock Text="Disk Galaxy"
+                               FontSize="22"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource AccentBrush}" />
+                    <TextBlock Text="Storage Visualizer"
+                               FontSize="12"
+                               Foreground="{StaticResource TextSecondaryBrush}" />
+                    <Separator />
+
+                    <!-- Scan Controls -->
+                    <TextBlock Text="Scan Target"
+                               FontSize="13"
+                               FontWeight="SemiBold" />
+
+                    <TextBox Text="{Binding Scan.SelectedPath}"
+                             Watermark="Enter path to scan..." />
+
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Command="{Binding Scan.StartScanCommand}"
+                                IsEnabled="{Binding Scan.IsScanning, Converter={x:Static conv:BoolConverters.Not}}"
+                                Width="120">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <TextBlock Text="▶" />
+                                <TextBlock Text="Scan" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{Binding Scan.CancelScanCommand}"
+                                IsEnabled="{Binding Scan.IsScanning}"
+                                Width="100">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <TextBlock Text="■" />
+                                <TextBlock Text="Cancel" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <Separator />
+
+                    <!-- Progress -->
+                    <ProgressBar Value="{Binding Scan.ProgressValue}"
+                                 IsIndeterminate="{Binding Scan.IsIndeterminate}"
+                                 Height="4"
+                                 IsVisible="{Binding Scan.IsScanning}" />
+
+                    <TextBlock Text="{Binding Scan.CurrentPath}"
+                               FontSize="11"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               TextWrapping="Wrap"
+                               MaxHeight="40" />
+
+                    <!-- Stats -->
+                    <StackPanel Spacing="4" IsVisible="{Binding Scan.IsScanning}">
+                        <TextBlock FontSize="12" Foreground="{StaticResource TextSecondaryBrush}">
+                            <Run Text="Files: " />
+                            <Run Text="{Binding Scan.FilesScanned}" />
+                        </TextBlock>
+                        <TextBlock FontSize="12" Foreground="{StaticResource TextSecondaryBrush}">
+                            <Run Text="Folders: " />
+                            <Run Text="{Binding Scan.FoldersScanned}" />
+                        </TextBlock>
+                        <TextBlock FontSize="12" Foreground="{StaticResource TextSecondaryBrush}">
+                            <Run Text="Size: " />
+                            <Run Text="{Binding Scan.TotalSize, StringFormat={}{0:N0} bytes}" />
+                        </TextBlock>
+                    </StackPanel>
+
+                    <!-- Results Summary -->
+                    <StackPanel Spacing="4"
+                                IsVisible="{Binding Scan.LastResult, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
+                        <Separator />
+                        <TextBlock Text="Scan Complete"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource AccentBrush}" />
+                        <TextBlock FontSize="12" Foreground="{StaticResource TextSecondaryBrush}">
+                            <Run Text="Total files: " />
+                            <Run Text="{Binding Scan.LastResult.TotalFiles}" />
+                        </TextBlock>
+                        <TextBlock FontSize="12" Foreground="{StaticResource TextSecondaryBrush}">
+                            <Run Text="Total size: " />
+                            <Run Text="{Binding Scan.LastResult.TotalSize, StringFormat={}{0:N0} bytes}" />
+                        </TextBlock>
+                        <TextBlock FontSize="12" Foreground="{StaticResource TextSecondaryBrush}">
+                            <Run Text="Errors: " />
+                            <Run Text="{Binding Scan.LastResult.Errors.Count}" />
+                        </TextBlock>
+                    </StackPanel>
+
+                    <!-- Errors -->
+                    <ListBox ItemsSource="{Binding Scan.Errors}"
+                             MaxHeight="150"
+                             IsVisible="{Binding Scan.Errors.Count, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}"
+                                           FontSize="11"
+                                           Foreground="#FF6B6B"
+                                           TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
 </Window>

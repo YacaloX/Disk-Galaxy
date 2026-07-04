@@ -1,18 +1,41 @@
 ﻿using Avalonia;
-using System;
+using DiskGalaxy.Core.Scanning;
+using DiskGalaxy.UI.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
 namespace DiskGalaxy.UI;
 
 sealed class Program
 {
-    // Initialization code. Don't use any Avalonia, third-party APIs or any
-    // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
-    // yet and stuff might break.
-    [STAThread]
-    public static void Main(string[] args) => BuildAvaloniaApp()
-        .StartWithClassicDesktopLifetime(args);
+    public static ServiceProvider ServiceProvider { get; private set; } = null!;
 
-    // Avalonia configuration, don't remove; also used by visual designer.
+    [STAThread]
+    public static void Main(string[] args)
+    {
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Information()
+            .WriteTo.Console()
+            .WriteTo.File("logs/diskgalaxy.log", rollingInterval: RollingInterval.Day)
+            .CreateLogger();
+
+        var services = new ServiceCollection();
+        ConfigureServices(services);
+        ServiceProvider = services.BuildServiceProvider();
+
+        BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+    }
+
+    private static void ConfigureServices(IServiceCollection services)
+    {
+        services.AddSingleton(Log.Logger);
+
+        services.AddSingleton<IFileSystemScanner, FileSystemScanner>();
+
+        services.AddTransient<ScanViewModel>();
+        services.AddTransient<MainWindowViewModel>();
+    }
+
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()

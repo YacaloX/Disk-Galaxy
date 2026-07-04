@@ -1,8 +1,13 @@
-﻿namespace DiskGalaxy.UI.ViewModels;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-public partial class MainWindowViewModel : ViewModelBase
+namespace DiskGalaxy.UI.ViewModels;
+
+public sealed partial class MainWindowViewModel : ViewModelBase
 {
-#pragma warning disable CA1822 // Mark members as static
-    public string Greeting => "Welcome to Avalonia!";
-#pragma warning restore CA1822 // Mark members as static
+    public ScanViewModel Scan { get; }
+
+    public MainWindowViewModel(ScanViewModel scanViewModel)
+    {
+        Scan = scanViewModel;
+    }
 }
