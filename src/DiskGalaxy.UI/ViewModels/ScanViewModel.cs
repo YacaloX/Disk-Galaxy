@@ -107,11 +107,6 @@ public sealed partial class ScanViewModel : ViewModelBase
         FilesScanned = progress.FilesScanned;
         FoldersScanned = progress.FoldersScanned;
         TotalSize = progress.TotalSize;
-        IsIndeterminate = progress.IsIndeterminate;
-
-        if (progress.TotalSize > 0 && !progress.IsIndeterminate)
-        {
-            ProgressValue = Math.Min(progress.FilesScanned / 1000.0 * 100, 99);
-        }
+        IsIndeterminate = true;
     }
 }

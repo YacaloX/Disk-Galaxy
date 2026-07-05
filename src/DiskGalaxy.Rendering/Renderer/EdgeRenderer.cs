@@ -43,13 +43,13 @@ public sealed class EdgeRenderer : IDisposable
         foreach (var (start, end) in edges)
         {
             var dist = Vector3D.Distance(start, end);
-            var alpha = Math.Clamp(1f - dist / 200f, 0.35f, 0.85f);
+            var brightness = Math.Clamp(1f - dist / 200f, 0.35f, 0.85f);
 
             verts[idx++] = start.X; verts[idx++] = start.Y; verts[idx++] = start.Z;
-            verts[idx++] = alpha; verts[idx++] = alpha; verts[idx++] = alpha;
+            verts[idx++] = brightness; verts[idx++] = brightness; verts[idx++] = brightness;
 
             verts[idx++] = end.X; verts[idx++] = end.Y; verts[idx++] = end.Z;
-            verts[idx++] = alpha; verts[idx++] = alpha; verts[idx++] = alpha;
+            verts[idx++] = brightness; verts[idx++] = brightness; verts[idx++] = brightness;
         }
 
         _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _vbo);
