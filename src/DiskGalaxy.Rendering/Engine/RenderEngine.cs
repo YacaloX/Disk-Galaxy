@@ -16,6 +16,7 @@ public sealed class RenderEngine : IDisposable
     private readonly NodeRenderer _nodeRenderer;
     private readonly EdgeRenderer _edgeRenderer;
     private readonly GalaxyClusterRenderer _clusterRenderer;
+    private readonly SkyboxRenderer _skyboxRenderer;
     private SceneGraph? _sceneGraph;
     private readonly ILogger _logger;
 
@@ -52,6 +53,9 @@ public sealed class RenderEngine : IDisposable
         _logger.Information("Creating cluster shader...");
         var clusterShader = new Shader(_gl, ShaderSources.ClusterVertex, ShaderSources.ClusterFragment);
 
+        _logger.Information("Creating skybox shader...");
+        var skyboxShader = new Shader(_gl, ShaderSources.SkyboxVertex, ShaderSources.SkyboxFragment);
+
         _logger.Information("Creating node renderer...");
         _nodeRenderer = new NodeRenderer(_gl, nodeShader, maxNodes);
 
@@ -60,6 +64,9 @@ public sealed class RenderEngine : IDisposable
 
         _logger.Information("Creating galaxy cluster renderer...");
         _clusterRenderer = new GalaxyClusterRenderer(_gl, clusterShader);
+
+        _logger.Information("Creating skybox renderer...");
+        _skyboxRenderer = new SkyboxRenderer(_gl, skyboxShader);
 
         _camera.UpdateVectors();
         _gl.ClearColor(0.04f, 0.04f, 0.06f, 1.0f);
@@ -106,6 +113,8 @@ public sealed class RenderEngine : IDisposable
 
         _camera.SetAspectRatio(viewportWidth, viewportHeight);
         var viewProj = _camera.GetProjectionMatrix() * _camera.GetViewMatrix();
+
+        _skyboxRenderer.Render(viewProj);
 
         if (_sceneGraph is not null)
         {
@@ -213,5 +222,6 @@ public sealed class RenderEngine : IDisposable
         _nodeRenderer.Dispose();
         _edgeRenderer.Dispose();
         _clusterRenderer.Dispose();
+        _skyboxRenderer.Dispose();
     }
 }

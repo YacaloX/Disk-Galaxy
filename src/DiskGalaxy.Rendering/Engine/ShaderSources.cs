@@ -133,4 +133,36 @@ public static class ShaderSources
             fragColor = vec4(vColor * (1.0 + alpha * 0.4), alpha * vAlpha * 0.55);
         }
         """;
+
+    public const string SkyboxVertex =
+        """
+        #version 330 core
+        layout(location = 0) in vec3 aPos;
+        layout(location = 1) in float aBrightness;
+
+        uniform mat4 uViewProj;
+
+        out float vBrightness;
+
+        void main() {
+            gl_Position = uViewProj * vec4(aPos, 1.0);
+            gl_PointSize = 1.5;
+            vBrightness = aBrightness;
+        }
+        """;
+
+    public const string SkyboxFragment =
+        """
+        #version 330 core
+        in float vBrightness;
+        out vec4 fragColor;
+
+        void main() {
+            vec2 coord = gl_PointCoord - vec2(0.5);
+            float dist = length(coord);
+            float alpha = 1.0 - smoothstep(0.0, 0.5, dist);
+            if (alpha < 0.01) discard;
+            fragColor = vec4(vec3(0.8, 0.85, 1.0) * vBrightness, alpha * 0.7);
+        }
+        """;
 }

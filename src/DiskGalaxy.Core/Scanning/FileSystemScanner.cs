@@ -25,8 +25,10 @@ public sealed class FileSystemScanner : IFileSystemScanner
         var errors = new List<string>();
         var scannedPaths = new HashSet<string>(StringComparer.Ordinal);
 
+        var normalizedPath = NormalizePath(path);
+
         var rootFolder = await ScanDirectoryAsync(
-            path, 0, options, scannedPaths, errors, progress, startTime, cancellationToken);
+            normalizedPath, 0, options, scannedPaths, errors, progress, startTime, cancellationToken);
 
         var duration = DateTime.UtcNow - startTime;
 
@@ -158,6 +160,15 @@ public sealed class FileSystemScanner : IFileSystemScanner
         }
 
         return folder;
+    }
+
+    private static string NormalizePath(string path)
+    {
+        if (OperatingSystem.IsWindows() && path.Length > 240 && !path.StartsWith(@"\\?\"))
+        {
+            return @"\\?\" + path;
+        }
+        return path;
     }
 
     private static string? ResolveRealPath(string path)
