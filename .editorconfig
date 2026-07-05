@@ -1,0 +1,28 @@
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+charset = utf-8
+
+[*.cs]
+indent_size = 4
+csharp_style_var_for_built_in_types = true:error
+csharp_style_var_when_type_is_apparent = true:error
+csharp_style_pattern_matching_over_is_with_cast_check = true:error
+csharp_style_expression_bodied_methods = false:none
+csharp_style_expression_bodied_properties = true:error
+csharp_style_expression_bodied_indexers = true:error
+csharp_new_line_before_open_brace = all
+
+[*.axaml]
+indent_size = 2
+indent_style = space
+
+[*.{json,yml,yaml,md}]
+indent_size = 2
+
+[*.csproj]
+indent_size = 2

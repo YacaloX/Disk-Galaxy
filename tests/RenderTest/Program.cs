@@ -56,7 +56,9 @@ unsafe class Program
         Console.WriteLine($"OpenGL: {gl.GetStringS(StringName.Version)}");
         Console.WriteLine($"GLSL:   {gl.GetStringS(StringName.ShadingLanguageVersion)}\n");
 
+#pragma warning disable IDE0007 // pointers can't use var
         byte* pix = stackalloc byte[4];
+#pragma warning restore IDE0007
 
         // ---- Test 1: Clear + Readback ----
         Console.WriteLine("-- Test 1: Clear + Readback --");
@@ -64,12 +66,12 @@ unsafe class Program
         gl.Clear(ClearBufferMask.ColorBufferBit);
         gl.ReadPixels(0, 0, 1, 1, PixelFormat.Rgba, PixelType.UnsignedByte, pix);
         Console.WriteLine($"  Center pixel: ({pix[0]},{pix[1]},{pix[2]},{pix[3]})");
-        bool pass = Math.Abs(pix[0] - 26) <= 1 && Math.Abs(pix[1] - 51) <= 1 && Math.Abs(pix[2] - 77) <= 1;
+        var pass = Math.Abs(pix[0] - 26) <= 1 && Math.Abs(pix[1] - 51) <= 1 && Math.Abs(pix[2] - 77) <= 1;
         Console.WriteLine(pass ? "  PASS" : $"  FAIL (expected ~26,51,77, got {pix[0]},{pix[1]},{pix[2]})");
 
         // ---- Test 2: Full-screen triangle (gl_VertexID) ----
         Console.WriteLine("\n-- Test 2: Full-screen triangle (gl_VertexID) --");
-        uint fsTriVs = gl.CreateShader(ShaderType.VertexShader);
+        var fsTriVs = gl.CreateShader(ShaderType.VertexShader);
         gl.ShaderSource(fsTriVs, """
             #version 330 core
             void main() {
@@ -79,28 +81,29 @@ unsafe class Program
             }
             """);
         gl.CompileShader(fsTriVs);
-        gl.GetShader(fsTriVs, ShaderParameterName.CompileStatus, out int ok);
+        gl.GetShader(fsTriVs, ShaderParameterName.CompileStatus, out var ok);
         if (ok == 0) { Console.WriteLine($"  FAIL: tri vertex shader compile\n  {gl.GetShaderInfoLog(fsTriVs)}"); return; }
 
-        uint fsTriFs = gl.CreateShader(ShaderType.FragmentShader);
+        var fsTriFs = gl.CreateShader(ShaderType.FragmentShader);
         gl.ShaderSource(fsTriFs, """
             #version 330 core
             out vec4 fragColor;
             void main() { fragColor = vec4(0.0, 1.0, 0.0, 1.0); }
             """);
         gl.CompileShader(fsTriFs);
-        gl.GetShader(fsTriFs, ShaderParameterName.CompileStatus, out ok);
-        if (ok == 0) { Console.WriteLine($"  FAIL: tri fragment shader compile\n  {gl.GetShaderInfoLog(fsTriFs)}"); return; }
+        gl.GetShader(fsTriFs, ShaderParameterName.CompileStatus, out var ok2);
+        var okFinal = ok2;
+        if (okFinal == 0) { Console.WriteLine($"  FAIL: tri fragment shader compile\n  {gl.GetShaderInfoLog(fsTriFs)}"); return; }
 
-        uint triProg = gl.CreateProgram();
+        var triProg = gl.CreateProgram();
         gl.AttachShader(triProg, fsTriVs);
         gl.AttachShader(triProg, fsTriFs);
         gl.LinkProgram(triProg);
-        gl.GetProgram(triProg, GLEnum.LinkStatus, out ok);
-        if (ok == 0) { Console.WriteLine($"  FAIL: tri program link\n  {gl.GetProgramInfoLog(triProg)}"); return; }
+        gl.GetProgram(triProg, GLEnum.LinkStatus, out var ok3);
+        if (ok3 == 0) { Console.WriteLine($"  FAIL: tri program link\n  {gl.GetProgramInfoLog(triProg)}"); return; }
 
         gl.UseProgram(triProg);
-        uint vao;
+        uint vao; // IDE0007: can't infer from out parameter
         gl.GenVertexArrays(1, out vao);
         gl.BindVertexArray(vao);
         gl.ClearColor(0.04f, 0.04f, 0.06f, 1f);
@@ -113,7 +116,7 @@ unsafe class Program
 
         // ---- Test 3: MVP triangle with identity matrix ----
         Console.WriteLine("\n-- Test 3: MVP triangle (identity, NDC coords) --");
-        uint mvpVs = gl.CreateShader(ShaderType.VertexShader);
+        var mvpVs = gl.CreateShader(ShaderType.VertexShader);
         gl.ShaderSource(mvpVs, """
             #version 330 core
             layout(location=0) in vec2 aPos;
@@ -121,27 +124,27 @@ unsafe class Program
             void main() { gl_Position = uMVP * vec4(aPos, 0.0, 1.0); }
             """);
         gl.CompileShader(mvpVs);
-        gl.GetShader(mvpVs, ShaderParameterName.CompileStatus, out ok);
-        if (ok == 0) { Console.WriteLine($"  FAIL: mvp vertex shader compile\n  {gl.GetShaderInfoLog(mvpVs)}"); return; }
+        gl.GetShader(mvpVs, ShaderParameterName.CompileStatus, out var ok4);
+        if (ok4 == 0) { Console.WriteLine($"  FAIL: mvp vertex shader compile\n  {gl.GetShaderInfoLog(mvpVs)}"); return; }
 
-        uint mvpFs = gl.CreateShader(ShaderType.FragmentShader);
+        var mvpFs = gl.CreateShader(ShaderType.FragmentShader);
         gl.ShaderSource(mvpFs, """
             #version 330 core
             out vec4 fragColor;
             void main() { fragColor = vec4(1.0, 0.0, 0.0, 1.0); }
             """);
         gl.CompileShader(mvpFs);
-        gl.GetShader(mvpFs, ShaderParameterName.CompileStatus, out ok);
-        if (ok == 0) { Console.WriteLine($"  FAIL: mvp fragment shader compile\n  {gl.GetShaderInfoLog(mvpFs)}"); return; }
+        gl.GetShader(mvpFs, ShaderParameterName.CompileStatus, out var ok5);
+        if (ok5 == 0) { Console.WriteLine($"  FAIL: mvp fragment shader compile\n  {gl.GetShaderInfoLog(mvpFs)}"); return; }
 
-        uint mvpProg = gl.CreateProgram();
+        var mvpProg = gl.CreateProgram();
         gl.AttachShader(mvpProg, mvpVs);
         gl.AttachShader(mvpProg, mvpFs);
         gl.LinkProgram(mvpProg);
-        gl.GetProgram(mvpProg, GLEnum.LinkStatus, out ok);
-        if (ok == 0) { Console.WriteLine($"  FAIL: mvp program link\n  {gl.GetProgramInfoLog(mvpProg)}"); return; }
+        gl.GetProgram(mvpProg, GLEnum.LinkStatus, out var ok6);
+        if (ok6 == 0) { Console.WriteLine($"  FAIL: mvp program link\n  {gl.GetProgramInfoLog(mvpProg)}"); return; }
 
-        float[] triVerts = [-0.5f, -0.5f, 0.5f, -0.5f, 0.0f, 0.5f];
+        var triVerts = new float[] { -0.5f, -0.5f, 0.5f, -0.5f, 0.0f, 0.5f };
         uint vbo;
         gl.GenBuffers(1, out vbo);
         gl.BindBuffer(BufferTargetARB.ArrayBuffer, vbo);
@@ -150,7 +153,7 @@ unsafe class Program
         gl.EnableVertexAttribArray(0);
 
         gl.UseProgram(mvpProg);
-        int uMvp = gl.GetUniformLocation(mvpProg, "uMVP");
+        var uMvp = gl.GetUniformLocation(mvpProg, "uMVP");
         Console.WriteLine($"  uMVP location: {uMvp}");
         if (uMvp >= 0)
         {
