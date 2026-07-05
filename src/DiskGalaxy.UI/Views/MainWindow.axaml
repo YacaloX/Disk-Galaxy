@@ -123,9 +123,9 @@
                     </StackPanel>
 
                     <!-- Errors -->
-                    <ListBox ItemsSource="{Binding Scan.Errors}"
-                             MaxHeight="150"
-                             IsVisible="{Binding Scan.Errors.Count, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
+                     <ListBox ItemsSource="{Binding Scan.Errors}"
+                              MaxHeight="150"
+                              IsVisible="{Binding Scan.Errors.Count, Converter={x:Static conv:ObjectConverters.IsPositive}}">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding}"
@@ -218,9 +218,9 @@
                         <TextBox Text="{Binding Search.SearchQuery}"
                                  Watermark="Search files and folders..." />
 
-                        <ListBox ItemsSource="{Binding Search.Results}"
-                                 MaxHeight="200"
-                                 IsVisible="{Binding Search.Results.Count, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
+                         <ListBox ItemsSource="{Binding Search.Results}"
+                                  MaxHeight="200"
+                                  IsVisible="{Binding Search.Results.Count, Converter={x:Static conv:ObjectConverters.IsPositive}}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Spacing="2">
