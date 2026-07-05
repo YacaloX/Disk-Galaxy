@@ -32,7 +32,7 @@ sealed class Program
 
         services.AddSingleton<IFileSystemScanner, FileSystemScanner>();
 
-        services.AddTransient<GalaxyViewModel>();
+        services.AddSingleton<GalaxyViewModel>();
         services.AddTransient<ScanViewModel>(sp =>
         {
             var scanner = sp.GetRequiredService<IFileSystemScanner>();

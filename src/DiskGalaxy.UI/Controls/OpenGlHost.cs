@@ -5,7 +5,6 @@ using Avalonia.Threading;
 using DiskGalaxy.Rendering.Engine;
 using DiskGalaxy.Rendering.Scene;
 using Serilog;
-using Silk.NET.Core;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
@@ -18,15 +17,15 @@ public sealed class OpenGlHost : OpenGlControlBase
     private RenderEngine? _engine;
     private GL? _gl;
     private bool _initialized;
+    private bool _needsSceneUpdate = true;
     private ILogger _logger = null!;
 
-    public SceneGraph? SceneGraph { get; set; }
-
     private long _lastFrameTime;
-    private const float TargetFps = 60f;
-    private const float FrameInterval = 1f / TargetFps;
-
+    private long _lastClickTime;
     private Point _lastMousePos;
+
+    public event Action<SceneNode?>? SelectionChanged;
+    public event Action<SceneNode?>? NodeDoubleClicked;
 
     static OpenGlHost()
     {
@@ -35,6 +34,29 @@ public sealed class OpenGlHost : OpenGlControlBase
 
     public static readonly StyledProperty<SceneGraph?> SceneGraphProperty =
         AvaloniaProperty.Register<OpenGlHost, SceneGraph?>(nameof(SceneGraph));
+
+    public SceneGraph? SceneGraph
+    {
+        get => GetValue(SceneGraphProperty);
+        set => SetValue(SceneGraphProperty, value);
+    }
+
+    public RenderEngine? Engine => _engine;
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+
+        if (change.Property == SceneGraphProperty)
+        {
+            _needsSceneUpdate = true;
+            _logger.Information("SceneGraph changed: {HasValue}", SceneGraph is not null);
+            if (SceneGraph is not null)
+                _logger.Information("SceneGraph: {Nodes} nodes, {Edges} edges",
+                    SceneGraph.VisibleNodes.Count, SceneGraph.Edges.Count);
+            RequestNextFrameRendering();
+        }
+    }
 
     protected override void OnOpenGlInit(GlInterface glInterface)
     {
@@ -46,9 +68,10 @@ public sealed class OpenGlHost : OpenGlControlBase
         _engine = new RenderEngine(_gl);
         _initialized = true;
 
-        _logger.Information("OpenGlHost initialized");
+        _logger.Information("OpenGlHost initialized (GL {Version})", _gl.GetStringS(StringName.Version));
 
         _lastFrameTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+        RequestNextFrameRendering();
     }
 
     protected override void OnOpenGlDeinit(GlInterface glInterface)
@@ -59,7 +82,6 @@ public sealed class OpenGlHost : OpenGlControlBase
             _gl?.Dispose();
             _initialized = false;
         }
-
         base.OnOpenGlDeinit(glInterface);
     }
 
@@ -67,34 +89,63 @@ public sealed class OpenGlHost : OpenGlControlBase
     {
         if (!_initialized || _engine is null) return;
 
-        var now = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-        var deltaTime = (now - _lastFrameTime) / 1000f;
-        _lastFrameTime = now;
-
-        deltaTime = Math.Clamp(deltaTime, 0.001f, 0.05f);
-
-        if (SceneGraph is not null)
+        try
         {
-            _engine.SetScene(SceneGraph);
+            var now = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+            var deltaTime = (now - _lastFrameTime) / 1000f;
+            _lastFrameTime = now;
+            deltaTime = Math.Clamp(deltaTime, 0.001f, 0.05f);
+
+            if (_needsSceneUpdate)
+            {
+                _engine.SetScene(SceneGraph);
+                _needsSceneUpdate = false;
+            }
+
+            _engine.Update(deltaTime);
+
+            var w = Math.Max(1, (int)Bounds.Width);
+            var h = Math.Max(1, (int)Bounds.Height);
+            _engine.Render(w, h);
+
+            Dispatcher.UIThread.Post(RequestNextFrameRendering, DispatcherPriority.Background);
         }
-
-        _engine.Update(deltaTime);
-
-        var w = Math.Max(1, (int)Bounds.Width);
-        var h = Math.Max(1, (int)Bounds.Height);
-        _engine.Render(w, h);
-
-        Dispatcher.UIThread.Post(() => RequestNextFrameRendering(), DispatcherPriority.Background);
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error during OpenGL render");
+        }
     }
 
     protected override void OnPointerPressed(Avalonia.Input.PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
+        _lastMousePos = e.GetPosition(this);
 
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
-            _lastMousePos = e.GetPosition(this);
             _engine?.Controller.MouseDown(new Vector2D<float>((float)_lastMousePos.X, (float)_lastMousePos.Y));
+
+            var now = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+            var clickElapsed = now - _lastClickTime;
+            _lastClickTime = now;
+
+            var hit = _engine?.HitTest((float)_lastMousePos.X, (float)_lastMousePos.Y);
+
+            if (hit is not null)
+            {
+                _engine?.SetSelectedNode(hit);
+                SelectionChanged?.Invoke(hit);
+
+                if (clickElapsed < 500 && clickElapsed > 0)
+                {
+                    NodeDoubleClicked?.Invoke(hit);
+                }
+            }
+            else
+            {
+                _engine?.SetSelectedNode(null);
+                SelectionChanged?.Invoke(null);
+            }
         }
     }
 
@@ -107,11 +158,12 @@ public sealed class OpenGlHost : OpenGlControlBase
     protected override void OnPointerMoved(Avalonia.Input.PointerEventArgs e)
     {
         base.OnPointerMoved(e);
-
         if (_engine is not null)
         {
             var pos = e.GetPosition(this);
             _engine.Controller.MouseMove(new Vector2D<float>((float)pos.X, (float)pos.Y));
+            var hit = _engine.HitTest((float)pos.X, (float)pos.Y);
+            _engine.SetHoveredNode(hit);
         }
     }
 

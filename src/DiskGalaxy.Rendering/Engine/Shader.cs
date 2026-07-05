@@ -62,7 +62,7 @@ public sealed class Shader : IDisposable
     {
         unsafe
         {
-            _gl.UniformMatrix4(GetLocation(name), 1, false, (float*)&value);
+            _gl.UniformMatrix4(GetLocation(name), 1, true, (float*)&value);
         }
     }
 

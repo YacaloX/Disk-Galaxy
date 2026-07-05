@@ -5,12 +5,12 @@ namespace DiskGalaxy.Rendering.Layout;
 
 public sealed class HierarchyLayout
 {
-    public float DepthSpacing { get; set; } = 4f;
+    public float DepthSpacing { get; set; } = 2.5f;
     public float BaseRadius { get; set; } = 2f;
-    public float RadiusScale { get; set; } = 1.5f;
-    public float FolderSizeMultiplier { get; set; } = 2.5f;
-    public float FileSizeBase { get; set; } = 0.4f;
-    public float MaxNodeSize { get; set; } = 8f;
+    public float RadiusScale { get; set; } = 1.2f;
+    public float FolderSizeMultiplier { get; set; } = 1.5f;
+    public float FileSizeBase { get; set; } = 0.3f;
+    public float MaxNodeSize { get; set; } = 4f;
 
     private static readonly Random Rng = new(42);
 

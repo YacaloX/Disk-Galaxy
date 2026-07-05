@@ -11,7 +11,7 @@ public static class SceneLoader
         return new SceneGraph(root);
     }
 
-    private static SceneNode BuildNode(FolderGalaxy folder, SceneNode? parent)
+    private static SceneNode BuildNode(FolderGalaxy folder, SceneNode? parent, int depth = 0)
     {
         var color = GetFolderColor(folder);
         var node = new SceneNode
@@ -19,8 +19,9 @@ public static class SceneLoader
             Label = folder.Name,
             FullPath = folder.FullPath,
             Color = color,
+            BaseColor = color,
             IsFolder = true,
-            IsExpanded = true,
+            IsExpanded = depth <= 1,
             ByteSize = folder.TotalSize,
             Parent = parent,
             Data = folder,
@@ -28,7 +29,7 @@ public static class SceneLoader
 
         foreach (var childFolder in folder.Children)
         {
-            var childNode = BuildNode(childFolder, node);
+            var childNode = BuildNode(childFolder, node, depth + 1);
             node.Children.Add(childNode);
         }
 
@@ -40,6 +41,7 @@ public static class SceneLoader
                 Label = star.Name,
                 FullPath = star.FullPath,
                 Color = starColor,
+                BaseColor = starColor,
                 IsFolder = false,
                 IsExpanded = false,
                 ByteSize = star.Size,

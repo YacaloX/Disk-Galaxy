@@ -14,14 +14,17 @@ public sealed class NodeRenderer : IDisposable
     private int _maxInstances;
     private int _instanceCount;
 
+    public int InstanceCount => _instanceCount;
+
+    // Vertex format: posX, posY, posZ, uvX, uvY
     private static readonly float[] QuadVertices =
     [
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.5f,  0.5f, 0.0f,
-        -0.5f, -0.5f, 0.0f,
-         0.5f,  0.5f, 0.0f,
-        -0.5f,  0.5f, 0.0f,
+        -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,
+         0.5f, -0.5f, 0.0f,  1.0f, 0.0f,
+         0.5f,  0.5f, 0.0f,  1.0f, 1.0f,
+        -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,
+         0.5f,  0.5f, 0.0f,  1.0f, 1.0f,
+        -0.5f,  0.5f, 0.0f,  0.0f, 1.0f,
     ];
 
     [StructLayout(LayoutKind.Sequential)]
@@ -59,13 +62,20 @@ public sealed class NodeRenderer : IDisposable
         _gl.BindVertexArray(_vao);
         _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _vbo);
 
-        var handle = GCHandle.Alloc(QuadVertices, GCHandleType.Pinned);
-        var ptr = handle.AddrOfPinnedObject();
-        _gl.BufferData(BufferTargetARB.ArrayBuffer, (uint)(QuadVertices.Length * sizeof(float)), ref ptr, BufferUsageARB.StaticDraw);
-        handle.Free();
+        unsafe
+        {
+            fixed (float* ptr = QuadVertices)
+            {
+                _gl.BufferData(BufferTargetARB.ArrayBuffer, (uint)(QuadVertices.Length * sizeof(float)), ptr, BufferUsageARB.StaticDraw);
+            }
+        }
 
-        _gl.VertexAttribPointer(0, 3, GLEnum.Float, false, (uint)(3 * sizeof(float)), IntPtr.Zero);
+        var stride = 5 * sizeof(float);
+        _gl.VertexAttribPointer(0, 3, GLEnum.Float, false, (uint)stride, IntPtr.Zero);
         _gl.EnableVertexAttribArray(0);
+
+        _gl.VertexAttribPointer(5, 2, GLEnum.Float, false, (uint)stride, (IntPtr)(3 * sizeof(float)));
+        _gl.EnableVertexAttribArray(5);
     }
 
     private void SetupInstancing()
@@ -108,18 +118,22 @@ public sealed class NodeRenderer : IDisposable
 
         _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _instanceVbo);
 
-        var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-        var ptr = handle.AddrOfPinnedObject();
-        _gl.BufferData(BufferTargetARB.ArrayBuffer, (uint)(_instanceCount * Marshal.SizeOf<InstanceData>()), ref ptr, BufferUsageARB.DynamicDraw);
-        handle.Free();
+        unsafe
+        {
+            fixed (InstanceData* ptr = data)
+            {
+                _gl.BufferData(BufferTargetARB.ArrayBuffer, (uint)(_instanceCount * sizeof(InstanceData)), ptr, BufferUsageARB.DynamicDraw);
+            }
+        }
     }
 
-    public void Render(Matrix4X4<float> viewProj)
+    public void Render(Matrix4X4<float> viewProj, Vector3D<float> cameraPos)
     {
         if (_instanceCount == 0) return;
 
         _shader.Use();
         _shader.SetUniform("uViewProj", viewProj);
+        _shader.SetUniform("uCameraPos", cameraPos);
 
         _gl.BindVertexArray(_vao);
         _gl.DrawArraysInstanced(PrimitiveType.Triangles, 0, 6, (uint)_instanceCount);

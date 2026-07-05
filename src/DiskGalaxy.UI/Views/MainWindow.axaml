@@ -20,6 +20,7 @@
 
         <!-- 3D Viewport -->
         <controls:OpenGlHost Grid.Column="0"
+                             Name="GalaxyView"
                              SceneGraph="{Binding Galaxy.SceneGraph}"
                              Focusable="True" />
 

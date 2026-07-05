@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using DiskGalaxy.Core.Scanning;
 using DiskGalaxy.UI.ViewModels;
 using DiskGalaxy.UI.Views;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +23,12 @@ public sealed partial class App : Application
             desktop.MainWindow = new MainWindow
             {
                 DataContext = mainViewModel,
+            };
+
+            desktop.MainWindow.Loaded += async (_, _) =>
+            {
+                if (!string.IsNullOrEmpty(mainViewModel.Scan.SelectedPath))
+                    await mainViewModel.Scan.StartScanCommand.ExecuteAsync(null);
             };
         }
 

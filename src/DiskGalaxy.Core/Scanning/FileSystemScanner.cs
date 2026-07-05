@@ -23,7 +23,7 @@ public sealed class FileSystemScanner : IFileSystemScanner
 
         var startTime = DateTime.UtcNow;
         var errors = new List<string>();
-        var scannedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var scannedPaths = new HashSet<string>(StringComparer.Ordinal);
 
         var rootFolder = await ScanDirectoryAsync(
             path, 0, options, scannedPaths, errors, progress, startTime, cancellationToken);

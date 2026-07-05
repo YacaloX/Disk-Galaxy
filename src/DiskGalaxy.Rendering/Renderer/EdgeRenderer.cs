@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using DiskGalaxy.Rendering.Engine;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
@@ -44,7 +43,7 @@ public sealed class EdgeRenderer : IDisposable
         foreach (var (start, end) in edges)
         {
             var dist = Vector3D.Distance(start, end);
-            var alpha = Math.Clamp(1f - dist / 200f, 0.1f, 0.5f);
+            var alpha = Math.Clamp(1f - dist / 200f, 0.35f, 0.85f);
 
             verts[idx++] = start.X; verts[idx++] = start.Y; verts[idx++] = start.Z;
             verts[idx++] = alpha; verts[idx++] = alpha; verts[idx++] = alpha;
@@ -55,10 +54,13 @@ public sealed class EdgeRenderer : IDisposable
 
         _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _vbo);
 
-        var handle = GCHandle.Alloc(verts, GCHandleType.Pinned);
-        var ptr = handle.AddrOfPinnedObject();
-        _gl.BufferData(BufferTargetARB.ArrayBuffer, (uint)(verts.Length * sizeof(float)), ref ptr, BufferUsageARB.DynamicDraw);
-        handle.Free();
+        unsafe
+        {
+            fixed (float* ptr = verts)
+            {
+                _gl.BufferData(BufferTargetARB.ArrayBuffer, (uint)(verts.Length * sizeof(float)), ptr, BufferUsageARB.DynamicDraw);
+            }
+        }
     }
 
     public void Render(Matrix4X4<float> viewProj)

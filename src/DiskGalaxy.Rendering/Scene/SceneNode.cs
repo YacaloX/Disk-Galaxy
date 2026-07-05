@@ -19,6 +19,8 @@ public sealed class SceneNode
     public int Index { get; set; }
     public bool IsHighlighted { get; set; }
     public bool IsHovered { get; set; }
+    public bool IsSelected { get; set; }
+    public Vector3D<float> BaseColor { get; set; }
 
     public int SubtreeSize
     {
