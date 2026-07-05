@@ -113,7 +113,7 @@ public sealed class NodeRenderer : IDisposable
         for (var i = 0; i < _instanceCount; i++)
         {
             var node = nodes[i];
-            data[i] = new InstanceData(node.Position, node.Color, node.Size, node.IsFolder);
+            data[i] = new InstanceData(node.Position, node.EffectiveColor, node.Size, node.IsFolder);
         }
 
         _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _instanceVbo);

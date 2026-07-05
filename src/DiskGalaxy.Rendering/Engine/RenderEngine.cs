@@ -41,8 +41,8 @@ public sealed class RenderEngine : IDisposable
         _camera = new Camera.Camera();
         _controller = new CameraController(_camera);
 
-        // Clear any stale GL errors from Avalonia's context initialization
-        while (_gl.GetError() != GLEnum.NoError) { }
+        // Clear any stale GL errors from Avalonia's context initialization (max 32 iterations)
+        for (var i = 0; i < 32 && _gl.GetError() != GLEnum.NoError; i++) { }
 
         _logger.Information("Creating node shader...");
         var nodeShader = new Shader(_gl, ShaderSources.NodeVertex, ShaderSources.NodeFragment);
@@ -72,6 +72,7 @@ public sealed class RenderEngine : IDisposable
         _gl.ClearColor(0.04f, 0.04f, 0.06f, 1.0f);
         _gl.Enable(EnableCap.DepthTest);
         _gl.Enable(EnableCap.Blend);
+        _gl.Enable(EnableCap.ProgramPointSize);
         _gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
         _lastStatsTime = Stopwatch.GetTimestamp();
@@ -103,13 +104,14 @@ public sealed class RenderEngine : IDisposable
             _controller.Update(deltaTime);
     }
 
-    public void Render(int viewportWidth, int viewportHeight)
+    public void Render(int viewportWidth, int viewportHeight, uint framebuffer = 0)
     {
         _viewportWidth = viewportWidth;
         _viewportHeight = viewportHeight;
+
+        _gl.BindFramebuffer(FramebufferTarget.Framebuffer, framebuffer);
         _gl.Viewport(0, 0, (uint)viewportWidth, (uint)viewportHeight);
-        _gl.Clear(ClearBufferMask.ColorBufferBit);
-        _gl.Clear(ClearBufferMask.DepthBufferBit);
+        _gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
         _camera.SetAspectRatio(viewportWidth, viewportHeight);
         var viewProj = _camera.GetProjectionMatrix() * _camera.GetViewMatrix();
@@ -146,18 +148,12 @@ public sealed class RenderEngine : IDisposable
         if (_hoveredNode == node) return;
 
         if (_hoveredNode is not null)
-        {
             _hoveredNode.IsHovered = false;
-            _hoveredNode.Color = _hoveredNode.BaseColor;
-        }
 
         _hoveredNode = node;
 
         if (node is not null)
-        {
             node.IsHovered = true;
-            node.Color = node.BaseColor * 1.4f;
-        }
 
         if (_sceneGraph is not null)
             _nodeRenderer.UpdateInstances(_sceneGraph.VisibleNodes);
@@ -186,18 +182,12 @@ public sealed class RenderEngine : IDisposable
     public void SetSelectedNode(SceneNode? node)
     {
         if (_selectedNode is not null)
-        {
             _selectedNode.IsSelected = false;
-            _selectedNode.Color = _selectedNode.BaseColor;
-        }
 
         _selectedNode = node;
 
         if (node is not null)
-        {
             node.IsSelected = true;
-            node.Color = node.BaseColor * 1.8f + new Vector3D<float>(0.3f, 0.3f, 0.3f);
-        }
 
         if (_sceneGraph is not null)
             _nodeRenderer.UpdateInstances(_sceneGraph.VisibleNodes);
@@ -211,7 +201,7 @@ public sealed class RenderEngine : IDisposable
         foreach (var node in folderNodes)
         {
             var radius = Math.Max(0.5f, MathF.Log10(Math.Max(node.ByteSize, 1) + 1) * 0.6f);
-            clusterData.Add(new ClusterRenderData(node.Position, node.Color, radius));
+            clusterData.Add(new ClusterRenderData(node.Position, node.EffectiveColor, radius));
         }
 
         _clusterRenderer.UpdateClusters(clusterData);

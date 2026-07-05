@@ -2,8 +2,6 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DiskGalaxy.Rendering.Scene;
-using Silk.NET.Maths;
-
 namespace DiskGalaxy.UI.ViewModels;
 
 public sealed partial class SearchViewModel : ViewModelBase
@@ -75,7 +73,6 @@ public sealed partial class SearchViewModel : ViewModelBase
                 node.FullPath.Contains(lower, StringComparison.OrdinalIgnoreCase))
             {
                 node.IsHighlighted = true;
-                node.Color = node.BaseColor * 1.6f + new Vector3D<float>(0.2f, 0.2f, 0.2f);
                 Results.Add(node);
             }
         }
@@ -97,9 +94,6 @@ public sealed partial class SearchViewModel : ViewModelBase
     {
         if (_sceneGraph is null) return;
         foreach (var node in _sceneGraph.AllNodes)
-        {
             node.IsHighlighted = false;
-            node.Color = node.BaseColor;
-        }
     }
 }

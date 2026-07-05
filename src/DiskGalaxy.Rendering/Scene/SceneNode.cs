@@ -20,7 +20,24 @@ public sealed class SceneNode
     public bool IsHighlighted { get; set; }
     public bool IsHovered { get; set; }
     public bool IsSelected { get; set; }
+    public bool IsDimmed { get; set; }
     public Vector3D<float> BaseColor { get; set; }
+
+    public Vector3D<float> EffectiveColor
+    {
+        get
+        {
+            if (IsSelected)
+                return BaseColor * 1.8f + new Vector3D<float>(0.3f, 0.3f, 0.3f);
+            if (IsHovered)
+                return BaseColor * 1.4f;
+            if (IsHighlighted)
+                return BaseColor * 1.6f + new Vector3D<float>(0.2f, 0.2f, 0.2f);
+            if (IsDimmed)
+                return BaseColor * 0.15f;
+            return BaseColor;
+        }
+    }
 
     public int SubtreeSize
     {

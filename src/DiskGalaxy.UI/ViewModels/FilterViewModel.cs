@@ -1,7 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using DiskGalaxy.Core.Models;
 using DiskGalaxy.Rendering.Scene;
-using Silk.NET.Maths;
 
 namespace DiskGalaxy.UI.ViewModels;
 
@@ -136,7 +135,7 @@ public sealed partial class FilterViewModel : ViewModelBase
         {
             if (node.IsFolder)
             {
-                node.Color = node.BaseColor;
+                node.IsDimmed = false;
                 continue;
             }
 
@@ -147,9 +146,7 @@ public sealed partial class FilterViewModel : ViewModelBase
                 && (!RecentFilesOnly || GetNodeModified(node) >= cutoffDate)
                 && (!LargeFilesOnly || node.ByteSize >= 1024L * 1024 * 1024);
 
-            node.Color = visible
-                ? node.BaseColor
-                : node.BaseColor * new Vector3D<float>(0.15f, 0.15f, 0.15f);
+            node.IsDimmed = !visible;
         }
 
         FiltersApplied?.Invoke();
