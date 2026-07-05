@@ -4,9 +4,9 @@ namespace DiskGalaxy.Rendering.Camera;
 
 public sealed class Camera
 {
-    public Vector3D<float> Position { get; set; } = new(0, 8, 18);
+    public Vector3D<float> Position { get; set; } = new(0, 6, 12);
     public float Yaw { get; set; } = -90f;
-    public float Pitch { get; set; } = -20f;
+    public float Pitch { get; set; } = -30f;
     public float Fov { get; set; } = 50f;
     public float NearPlane { get; set; } = 0.1f;
     public float FarPlane { get; set; } = 10000f;

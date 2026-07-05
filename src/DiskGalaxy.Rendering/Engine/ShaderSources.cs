@@ -165,4 +165,5 @@ public static class ShaderSources
             fragColor = vec4(vec3(0.8, 0.85, 1.0) * vBrightness, alpha * 0.7);
         }
         """;
+
 }

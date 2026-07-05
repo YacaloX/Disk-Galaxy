@@ -35,7 +35,7 @@ public sealed class Shader : IDisposable
         _gl.DeleteShader(vertex);
         _gl.DeleteShader(fragment);
 
-        _logger.Debug("Shader program {Handle} compiled and linked", _handle);
+        _logger.Debug("Shader program {_handle} compiled and linked", _handle);
     }
 
     public void Use()
