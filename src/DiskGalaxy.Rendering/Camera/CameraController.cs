@@ -15,7 +15,7 @@ public sealed class CameraController
     private static readonly HashSet<Key> LeftKeys = [Key.A, Key.Left];
     private static readonly HashSet<Key> RightKeys = [Key.D, Key.Right];
     private static readonly Key UpKey = Key.Space;
-    private static readonly Key DownKey = Key.ControlLeft;
+    private static readonly HashSet<Key> DownKeys = [Key.ControlLeft, Key.ControlRight];
 
     public CameraController(Camera camera)
     {
@@ -66,7 +66,7 @@ public sealed class CameraController
             _camera.MoveRight(deltaTime, fast);
         if (_pressedKeys.Contains(UpKey))
             _camera.MoveUp(deltaTime, fast);
-        if (_pressedKeys.Contains(DownKey))
+        if (_pressedKeys.Overlaps(DownKeys))
             _camera.MoveDown(deltaTime, fast);
     }
 }
