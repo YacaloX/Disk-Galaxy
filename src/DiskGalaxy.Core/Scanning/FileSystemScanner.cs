@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using DiskGalaxy.Core.Models;
 using Serilog;
 
@@ -90,12 +89,12 @@ public sealed class FileSystemScanner : IFileSystemScanner
                 {
                     var attr = File.GetAttributes(entry);
 
-                    if (attr.HasFlag(FileAttributes.ReparsePoint) && !options.FollowSymlinks)
+                    if ((attr & FileAttributes.ReparsePoint) != 0 && !options.FollowSymlinks)
                     {
                         continue;
                     }
 
-                    if (attr.HasFlag(FileAttributes.Directory))
+                    if ((attr & FileAttributes.Directory) != 0)
                     {
                         var subFolder = await ScanDirectoryAsync(
                             entry, depth + 1, options, scannedPaths, errors, progress, startTime, cancellationToken);

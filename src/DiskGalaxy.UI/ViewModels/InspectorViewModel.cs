@@ -14,7 +14,7 @@ public sealed partial class InspectorViewModel : ViewModelBase
     public string DisplayName => Node?.Label ?? string.Empty;
     public string FullPath => Node?.FullPath ?? string.Empty;
     public string Extension => Node?.IsFolder == true ? "Folder" : (Path.GetExtension(Node?.FullPath) ?? "Unknown");
-    public string SizeFormatted => FormatSize(Node?.ByteSize ?? 0);
+    public string SizeFormatted => FileSizeFormatter.Format(Node?.ByteSize ?? 0);
     public string CategoryName => GetCategoryName();
     public string CategoryColor => GetCategoryColor();
     public string ParentName => Node?.Parent?.Label ?? "(root)";
@@ -87,11 +87,4 @@ public sealed partial class InspectorViewModel : ViewModelBase
         return Node?.IsFolder == true ? "#6C63FF" : "#9E9E9E";
     }
 
-    private static string FormatSize(long bytes) => bytes switch
-    {
-        < 1024 => $"{bytes} B",
-        < 1024 * 1024 => $"{bytes / 1024.0:F1} KB",
-        < 1024L * 1024 * 1024 => $"{bytes / (1024.0 * 1024):F1} MB",
-        _ => $"{bytes / (1024.0 * 1024 * 1024):F2} GB"
-    };
 }
