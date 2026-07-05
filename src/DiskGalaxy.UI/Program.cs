@@ -33,12 +33,21 @@ sealed class Program
         services.AddSingleton<IFileSystemScanner, FileSystemScanner>();
 
         services.AddSingleton<GalaxyViewModel>();
+        services.AddSingleton<SearchViewModel>();
+        services.AddSingleton<FilterViewModel>();
         services.AddTransient<ScanViewModel>(sp =>
         {
             var scanner = sp.GetRequiredService<IFileSystemScanner>();
             var galaxy = sp.GetRequiredService<GalaxyViewModel>();
+            var search = sp.GetRequiredService<SearchViewModel>();
+            var filter = sp.GetRequiredService<FilterViewModel>();
             var vm = new ScanViewModel(scanner);
-            vm.OnScanCompleted += result => galaxy.LoadScanResult(result);
+            vm.OnScanCompleted += result =>
+            {
+                galaxy.LoadScanResult(result);
+                search.SceneGraph = galaxy.SceneGraph;
+                filter.SceneGraph = galaxy.SceneGraph;
+            };
             return vm;
         });
         services.AddTransient<MainWindowViewModel>();

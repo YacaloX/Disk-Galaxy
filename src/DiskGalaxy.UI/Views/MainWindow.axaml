@@ -135,6 +135,175 @@
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
+
+                    <!-- Inspector Panel -->
+                    <StackPanel Spacing="6"
+                                IsVisible="{Binding Galaxy.SelectedNode, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
+                        <Separator />
+                        <TextBlock Text="Inspector"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource AccentBrush}" />
+
+                        <Border CornerRadius="6"
+                                Background="{StaticResource SpaceMid}"
+                                Padding="10">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="{Binding Galaxy.Inspector.DisplayName}"
+                                           FontSize="16"
+                                           FontWeight="Bold"
+                                           TextWrapping="Wrap" />
+
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Border CornerRadius="3"
+                                            Width="12" Height="12"
+                                            VerticalAlignment="Center">
+                                        <Border.Background>
+                                            <SolidColorBrush Color="{Binding Galaxy.Inspector.CategoryColor}" />
+                                        </Border.Background>
+                                    </Border>
+                                    <TextBlock Text="{Binding Galaxy.Inspector.CategoryName}"
+                                               FontSize="11"
+                                               Foreground="{StaticResource TextSecondaryBrush}" />
+                                </StackPanel>
+
+                                <TextBlock Text="{Binding Galaxy.Inspector.FullPath}"
+                                           FontSize="10"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           TextWrapping="Wrap" />
+
+                                <Grid ColumnDefinitions="80,*" RowDefinitions="Auto,Auto,Auto,Auto">
+                                    <TextBlock Text="Size:" Grid.Row="0" Grid.Column="0" FontSize="11"
+                                               Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Text="{Binding Galaxy.Inspector.SizeFormatted}"
+                                               Grid.Row="0" Grid.Column="1" FontSize="11" />
+
+                                    <TextBlock Text="Extension:" Grid.Row="1" Grid.Column="0"
+                                               FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Text="{Binding Galaxy.Inspector.Extension}"
+                                               Grid.Row="1" Grid.Column="1" FontSize="11" />
+
+                                    <TextBlock Text="Parent:" Grid.Row="2" Grid.Column="0"
+                                               FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Text="{Binding Galaxy.Inspector.ParentName}"
+                                               Grid.Row="2" Grid.Column="1" FontSize="11" />
+
+                                    <TextBlock Text="Type:" Grid.Row="3" Grid.Column="0"
+                                               FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Text="{Binding Galaxy.Inspector.IsFolder, StringFormat='{}{0}'}"
+                                               Grid.Row="3" Grid.Column="1" FontSize="11" />
+                                </Grid>
+
+                                <Button Command="{Binding Galaxy.Inspector.RevealInFileManagerCommand}"
+                                        FontSize="11"
+                                        Padding="8,4"
+                                        HorizontalAlignment="Left">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="📂" />
+                                        <TextBlock Text="Reveal in File Manager" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Search Panel -->
+                    <StackPanel Spacing="6">
+                        <Separator />
+                        <TextBlock Text="Search"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource AccentBrush}" />
+
+                        <TextBox Text="{Binding Search.SearchQuery}"
+                                 Watermark="Search files and folders..." />
+
+                        <ListBox ItemsSource="{Binding Search.Results}"
+                                 MaxHeight="200"
+                                 IsVisible="{Binding Search.Results.Count, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="{Binding Label}"
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding FullPath}"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+
+                    <!-- Filter Panel -->
+                    <StackPanel Spacing="6">
+                        <Separator />
+                        <TextBlock Text="Filters"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource AccentBrush}" />
+
+                        <ComboBox ItemsSource="{Binding Filter.Presets}"
+                                  SelectedIndex="{Binding Filter.SelectedPresetIndex}"
+                                  FontSize="12" />
+
+                        <TextBlock Text="Categories"
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextSecondaryBrush}" />
+
+                        <StackPanel Spacing="2">
+                            <CheckBox IsChecked="{Binding Filter.ShowImages}" FontSize="11">Images</CheckBox>
+                            <CheckBox IsChecked="{Binding Filter.ShowVideos}" FontSize="11">Videos</CheckBox>
+                            <CheckBox IsChecked="{Binding Filter.ShowDocuments}" FontSize="11">Documents</CheckBox>
+                            <CheckBox IsChecked="{Binding Filter.ShowAudio}" FontSize="11">Audio</CheckBox>
+                            <CheckBox IsChecked="{Binding Filter.ShowArchives}" FontSize="11">Archives</CheckBox>
+                            <CheckBox IsChecked="{Binding Filter.ShowExecutables}" FontSize="11">Executables</CheckBox>
+                            <CheckBox IsChecked="{Binding Filter.ShowCode}" FontSize="11">Code</CheckBox>
+                            <CheckBox IsChecked="{Binding Filter.ShowOther}" FontSize="11">Other</CheckBox>
+                        </StackPanel>
+
+                        <TextBlock Text="Size Range"
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                        <Grid ColumnDefinitions="*,Auto,*">
+                            <TextBlock Text="{Binding Filter.MinSizeMb, StringFormat={}{0:F0} MB}"
+                                       Grid.Column="0" FontSize="10" />
+                            <TextBlock Text="{Binding Filter.MaxSizeMb, StringFormat={}{0:F0} MB}"
+                                       Grid.Column="2" FontSize="10"
+                                       HorizontalAlignment="Right" />
+                        </Grid>
+
+                        <TextBlock Text="Options"
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                        <CheckBox IsChecked="{Binding Filter.RecentFilesOnly}" FontSize="11">Recent files (&lt; 7 days)</CheckBox>
+                        <CheckBox IsChecked="{Binding Filter.LargeFilesOnly}" FontSize="11">Large files (&gt; 1 GB)</CheckBox>
+                        <CheckBox IsChecked="{Binding Filter.HideEmptyFolders}" FontSize="11">Hide empty folders</CheckBox>
+                    </StackPanel>
+
+                    <!-- Status -->
+                    <StackPanel Spacing="4">
+                        <Separator />
+                        <TextBlock Text="Status"
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}">
+                            <Run Text="FPS: " />
+                            <Run Text="{Binding Galaxy.Fps, StringFormat={}{0:F0}}" />
+                        </TextBlock>
+                        <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}">
+                            <Run Text="Nodes: " />
+                            <Run Text="{Binding Galaxy.VisibleNodes}" />
+                            <Run Text=" / " />
+                            <Run Text="{Binding Galaxy.TotalNodes}" />
+                        </TextBlock>
+                        <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}">
+                            <Run Text="Total size: " />
+                            <Run Text="{Binding Galaxy.TotalSize, StringFormat={}{0:N0} bytes}" />
+                        </TextBlock>
+                    </StackPanel>
                 </StackPanel>
             </ScrollViewer>
         </Border>

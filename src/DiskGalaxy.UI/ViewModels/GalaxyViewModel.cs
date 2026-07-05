@@ -13,6 +13,38 @@ public sealed partial class GalaxyViewModel : ViewModelBase
     [ObservableProperty]
     private SceneNode? _selectedNode;
 
+    [ObservableProperty]
+    private float _fps;
+
+    [ObservableProperty]
+    private int _visibleNodes;
+
+    [ObservableProperty]
+    private int _totalNodes;
+
+    [ObservableProperty]
+    private long _totalSize;
+
+    public InspectorViewModel Inspector { get; }
+
+    public GalaxyViewModel()
+    {
+        Inspector = new InspectorViewModel();
+    }
+
+    partial void OnSelectedNodeChanged(SceneNode? value)
+    {
+        Inspector.Node = value;
+    }
+
+    public void UpdateStats(float fps, int visibleCount, int totalCount, long size)
+    {
+        Fps = fps;
+        VisibleNodes = visibleCount;
+        TotalNodes = totalCount;
+        TotalSize = size;
+    }
+
     public void LoadScanResult(ScanResult result)
     {
         var graph = SceneLoader.LoadFromScanResult(result);
@@ -24,6 +56,8 @@ public sealed partial class GalaxyViewModel : ViewModelBase
             graph.VisibleNodes.Count, graph.Edges.Count, result.TotalSize);
 
         SceneGraph = graph;
+        TotalSize = result.TotalSize;
+        TotalNodes = graph.AllNodes.Count;
     }
 
     public void Clear()

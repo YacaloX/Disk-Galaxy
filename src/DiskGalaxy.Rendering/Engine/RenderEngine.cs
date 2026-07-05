@@ -30,6 +30,8 @@ public sealed class RenderEngine : IDisposable
     public CameraController Controller => _controller;
     public SceneNode? HoveredNode => _hoveredNode;
     public SceneNode? SelectedNode => _selectedNode;
+    public int NodeCount => _nodeRenderer.InstanceCount;
+    public float CurrentFps { get; private set; }
 
     public RenderEngine(GL gl, int maxNodes = 500000)
     {
@@ -115,10 +117,9 @@ public sealed class RenderEngine : IDisposable
         _frameCount++;
         var now = Stopwatch.GetTimestamp();
         var elapsed = (now - _lastStatsTime) / (double)Stopwatch.Frequency;
-        if (elapsed >= 5.0)
+        if (elapsed >= 1.0)
         {
-            var fps = _frameCount / elapsed;
-            _logger.Information("FPS={Fps:F0} Nodes={Nodes}", fps, _nodeRenderer.InstanceCount);
+            CurrentFps = (float)(_frameCount / elapsed);
             _frameCount = 0;
             _lastStatsTime = now;
         }
@@ -151,6 +152,14 @@ public sealed class RenderEngine : IDisposable
 
         if (_sceneGraph is not null)
             _nodeRenderer.UpdateInstances(_sceneGraph.VisibleNodes);
+    }
+
+    public void RefreshInstances()
+    {
+        if (_sceneGraph is not null)
+        {
+            _nodeRenderer.UpdateInstances(_sceneGraph.VisibleNodes);
+        }
     }
 
     public void FlyToNode(SceneNode node)
