@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.OpenGL.Controls;
@@ -17,11 +18,14 @@ public sealed class OpenGlHost : OpenGlControlBase
     private RenderEngine? _engine;
     private GL? _gl;
     private bool _initialized;
+    private bool _initFailed;
     private bool _needsSceneUpdate = true;
     private ILogger _logger = null!;
+    private string _initError = string.Empty;
 
-    private long _lastFrameTime;
-    private long _lastClickTime;
+    private readonly Stopwatch _frameStopwatch = Stopwatch.StartNew();
+    private long _lastFrameTimestamp;
+    private long _lastClickTimestamp;
     private Point _lastMousePos;
 
     public event Action<SceneNode?>? SelectionChanged;
@@ -50,11 +54,15 @@ public sealed class OpenGlHost : OpenGlControlBase
         if (change.Property == SceneGraphProperty)
         {
             _needsSceneUpdate = true;
-            _logger.Information("SceneGraph changed: {HasValue}", SceneGraph is not null);
-            if (SceneGraph is not null)
-                _logger.Information("SceneGraph: {Nodes} nodes, {Edges} edges",
-                    SceneGraph.VisibleNodes.Count, SceneGraph.Edges.Count);
-            RequestNextFrameRendering();
+            if (_logger is not null)
+            {
+                _logger.Information("SceneGraph changed: {HasValue}", SceneGraph is not null);
+                if (SceneGraph is not null)
+                    _logger.Information("SceneGraph: {Nodes} nodes, {Edges} edges",
+                        SceneGraph.VisibleNodes.Count, SceneGraph.Edges.Count);
+            }
+            if (_initialized)
+                RequestNextFrameRendering();
         }
     }
 
@@ -63,15 +71,29 @@ public sealed class OpenGlHost : OpenGlControlBase
         base.OnOpenGlInit(glInterface);
 
         _logger = Log.ForContext<OpenGlHost>();
+        _initFailed = false;
+        _initError = string.Empty;
 
-        _gl = GL.GetApi(glInterface.GetProcAddress);
-        _engine = new RenderEngine(_gl);
-        _initialized = true;
+        try
+        {
+            _gl = GL.GetApi(glInterface.GetProcAddress);
+            var version = _gl.GetStringS(StringName.Version);
+            _logger.Information("OpenGL version: {Version}", version);
 
-        _logger.Information("OpenGlHost initialized (GL {Version})", _gl.GetStringS(StringName.Version));
+            _engine = new RenderEngine(_gl);
+            _initialized = true;
 
-        _lastFrameTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-        RequestNextFrameRendering();
+            _logger.Information("RenderEngine created successfully");
+
+            _lastFrameTimestamp = _frameStopwatch.ElapsedMilliseconds;
+            RequestNextFrameRendering();
+        }
+        catch (Exception ex)
+        {
+            _initFailed = true;
+            _initError = ex.Message;
+            _logger.Error(ex, "OpenGL initialization failed: {Message}", ex.Message);
+        }
     }
 
     protected override void OnOpenGlDeinit(GlInterface glInterface)
@@ -87,13 +109,32 @@ public sealed class OpenGlHost : OpenGlControlBase
 
     protected override void OnOpenGlRender(GlInterface glInterface, int fb)
     {
-        if (!_initialized || _engine is null) return;
+        if (_initFailed)
+        {
+            // Draw error indicator using immediate-mode fallback
+            if (_gl is not null)
+            {
+                _gl.BindFramebuffer(FramebufferTarget.Framebuffer, (uint)fb);
+                var w = Math.Max(1, (int)Bounds.Width);
+                var h = Math.Max(1, (int)Bounds.Height);
+                _gl.Viewport(0, 0, (uint)w, (uint)h);
+                _gl.ClearColor(0.1f, 0.02f, 0.02f, 1f);
+                _gl.Clear(ClearBufferMask.ColorBufferBit);
+            }
+            return;
+        }
+
+        if (!_initialized || _engine is null)
+        {
+            RequestNextFrameRendering();
+            return;
+        }
 
         try
         {
-            var now = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-            var deltaTime = (now - _lastFrameTime) / 1000f;
-            _lastFrameTime = now;
+            var now = _frameStopwatch.ElapsedMilliseconds;
+            var deltaTime = (now - _lastFrameTimestamp) / 1000f;
+            _lastFrameTimestamp = now;
             deltaTime = Math.Clamp(deltaTime, 0.001f, 0.05f);
 
             if (_needsSceneUpdate)
@@ -106,7 +147,7 @@ public sealed class OpenGlHost : OpenGlControlBase
 
             var w = Math.Max(1, (int)Bounds.Width);
             var h = Math.Max(1, (int)Bounds.Height);
-            _engine.Render(w, h);
+            _engine.Render(w, h, (uint)fb);
 
             Dispatcher.UIThread.Post(RequestNextFrameRendering, DispatcherPriority.Background);
         }
@@ -125,9 +166,9 @@ public sealed class OpenGlHost : OpenGlControlBase
         {
             _engine?.Controller.MouseDown(new Vector2D<float>((float)_lastMousePos.X, (float)_lastMousePos.Y));
 
-            var now = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-            var clickElapsed = now - _lastClickTime;
-            _lastClickTime = now;
+            var now = _frameStopwatch.ElapsedMilliseconds;
+            var clickElapsed = now - _lastClickTimestamp;
+            _lastClickTimestamp = now;
 
             var hit = _engine?.HitTest((float)_lastMousePos.X, (float)_lastMousePos.Y);
 
